@@ -98,6 +98,12 @@ int main(int argc, char *argv[]) {
     strncpy(outFileName, "/Users/michaelleong/michaelleong/NTNU/programming_2/hw0402/hw0402/outtest.c", strlen("/Users/michaelleong/michaelleong/NTNU/programming_2/hw0402/hw0402/outtest.c"));
 #endif
     
+    if(option > 4 || option < 1) {
+        printf("invalid option >:[\n");
+        printf("use '--help' for more options\n");
+        return 1;
+    }
+    
     varName varNameList[129];
     funcName funcNameList[129];
     size_t varNameIndex = 0;
@@ -240,78 +246,110 @@ int main(int argc, char *argv[]) {
             } while(*i != '"');
         }
         
-        //search for types
-        if((strncmp(i, "int", strlen("int")) == 0) && (!isLetter(*(i+strlen("int"))))) {
-            addRandSpaceNL(outFile);
-            i += strlen("int");
-            addRandSpaceNL(outFile);
+        if(option >= 1) {
+            //search for types
+            if((strncmp(i, "int", strlen("int")) == 0) && (!isLetter(*(i+strlen("int"))))) {
+                addRandSpaceNL(outFile);
+                i += strlen("int");
+                addRandSpaceNL(outFile);
+            }
+            
+            if((strncmp(i, "char", strlen("char")) == 0) && (!isLetter(*(i+strlen("char"))))) {
+                addRandSpaceNL(outFile);
+                i += strlen("char");
+                addRandSpaceNL(outFile);
+            }
         }
         
-        if((strncmp(i, "char", strlen("char")) == 0) && (!isLetter(*(i+strlen("char"))))) {
-            addRandSpaceNL(outFile);
-            i += strlen("char");
-            addRandSpaceNL(outFile);
-        }
         
-        //replace variables
+        //search variables
         for(size_t j = 0; j < varNameIndex; j++) {
             if((strncmp(i, varNameList[j].oriVarName, strlen(varNameList[j].oriVarName)) == 0) && (!isLetter(*(i+strlen(varNameList[j].oriVarName))))) {
                 //printf("offset: %ld\n", i-lastFound);
-                addRandSpaceNL(outFile);
-                fwrite(lastFound, i-lastFound, 1, outFile);
-                fwrite(varNameList[j].newVarName, strlen(varNameList[j].newVarName), 1, outFile);
-                i += strlen(varNameList[j].oriVarName);
-                lastFound = i;
-                addRandSpaceNL(outFile);
+                if(option == 1) {
+                    addRandSpaceNL(outFile);
+                    fwrite(lastFound, i-lastFound, 1, outFile);
+                    fwrite(varNameList[j].oriVarName, strlen(varNameList[j].oriVarName), 1, outFile);
+                    i += strlen(varNameList[j].oriVarName);
+                    lastFound = i;
+                    addRandSpaceNL(outFile);
+                }
+                
+                //replace variable
+                if(option >= 2) {
+                    addRandSpaceNL(outFile);
+                    fwrite(lastFound, i-lastFound, 1, outFile);
+                    fwrite(varNameList[j].newVarName, strlen(varNameList[j].newVarName), 1, outFile);
+                    i += strlen(varNameList[j].oriVarName);
+                    lastFound = i;
+                    addRandSpaceNL(outFile);
+                }
+                
                 break;
             }
         }
         
-        //replace functions
+        //search functions
         for(size_t j = 0; j < funcNameIndex; j++) {
             if((strncmp(i, funcNameList[j].oriFuncName, strlen(funcNameList[j].oriFuncName)) == 0) && (!isLetter(*(i+strlen(funcNameList[j].oriFuncName))))) {
                 //printf("offset: %ld\n", i-lastFound);
-                addRandSpaceNL(outFile);
-                fwrite(lastFound, i-lastFound, 1, outFile);
-                fwrite(funcNameList[j].newFuncName, strlen(funcNameList[j].newFuncName), 1, outFile);
-                i += strlen(funcNameList[j].oriFuncName);
-                lastFound = i;
-                addRandSpaceNL(outFile);
+                if(option == 1) {
+                    addRandSpaceNL(outFile);
+                    fwrite(lastFound, i-lastFound, 1, outFile);
+                    fwrite(funcNameList[j].oriFuncName, strlen(funcNameList[j].oriFuncName), 1, outFile);
+                    i += strlen(funcNameList[j].oriFuncName);
+                    lastFound = i;
+                    addRandSpaceNL(outFile);
+                }
+                
+                //replace functions
+                if(option >= 3) {
+                    addRandSpaceNL(outFile);
+                    fwrite(lastFound, i-lastFound, 1, outFile);
+                    fwrite(funcNameList[j].newFuncName, strlen(funcNameList[j].newFuncName), 1, outFile);
+                    i += strlen(funcNameList[j].oriFuncName);
+                    lastFound = i;
+                    addRandSpaceNL(outFile);
+                }
+                
                 break;
             }
         }
         
-        //replace numbers
-        if(isAscDigit(*i)) {
-            long long int intTemp = 0;
-            int decPlace = 0;
-            while(isAscDigit(*i)) {
-                i++;
-                decPlace++;
+        if(option == 4) {
+            //replace numbers
+            if(isAscDigit(*i)) {
+                long long int intTemp = 0;
+                int decPlace = 0;
+                while(isAscDigit(*i)) {
+                    i++;
+                    decPlace++;
+                }
+                char tempChar = *i;
+                *i = 0;
+                intTemp = strtol(i-decPlace, &pEnd, 10);
+                if(pEnd == NULL) {
+                    printf("Conversion unsuccessful\n");
+                    return 1;
+                }
+                *i = tempChar;
+                
+                //fwrite(lastFound, i-lastFound-decPlace, 1, stdout);
+                fwrite(lastFound, i-lastFound-decPlace, 1, outFile);
+                lastFound = i;
+                //printf("numbers: %lld : ", intTemp);
+                if(intTemp > 1) {
+                    long long int subtractor = (rand()%(intTemp-1))+1;
+                    long long int multiplier = (rand()%(intTemp-subtractor))+(intTemp-subtractor);
+                    //printf("(%lld + (%lld/%lld))", subtractor, (intTemp-subtractor)*multiplier, multiplier);
+                    fprintf(outFile, "(%lld + (%lld/%lld))", subtractor, (intTemp-subtractor)*multiplier, multiplier);
+                } else {
+                    fprintf(outFile, "%lld", intTemp);
+                }
+                //printf("\n");
             }
-            char tempChar = *i;
-            *i = 0;
-            intTemp = strtol(i-decPlace, &pEnd, 10);
-            if(pEnd == NULL) {
-                printf("Conversion unsuccessful\n");
-                return 1;
-            }
-            *i = tempChar;
-            
-            //fwrite(lastFound, i-lastFound-decPlace, 1, stdout);
-            fwrite(lastFound, i-lastFound-decPlace, 1, outFile);
-            lastFound = i;
-            //printf("numbers: %lld : ", intTemp);
-            if(intTemp > 1) {
-                long long int subtractor = (rand()%(intTemp-1))+1;
-                long long int multiplier = (rand()%(intTemp-subtractor))+(intTemp-subtractor);
-                //printf("(%lld + (%lld/%lld))", subtractor, (intTemp-subtractor)*multiplier, multiplier);
-                fprintf(outFile, "(%lld + (%lld/%lld))", subtractor, (intTemp-subtractor)*multiplier, multiplier);
-            } else {
-                fprintf(outFile, "%lld", intTemp);
-            }
-            //printf("\n");
         }
+        
         
     }
     
