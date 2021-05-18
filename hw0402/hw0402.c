@@ -57,50 +57,45 @@ int main(int argc, char *argv[]) {
     long int option = 0;
     char *pEnd = NULL;
     
-#ifdef terminal
     while ( ( c = getopt_long( argc, argv, "l:i:o:h", long_options, &index ) ) != -1 )
     {
         //printf( "index: %d\n", index );
         switch( c )
         {
             case 'l':
-                printf("option: l, %s\n", optarg);
+                //printf("option: l, %s\n", optarg);
                 option = strtol(optarg, &pEnd, 10);
                 if(pEnd == NULL) {
                     printf("Conversion unsuccessful\n");
                     return 1;
                 }
-                printf("option: %ld\n", option);
+                //printf("option: %ld\n", option);
                 break;
                 
             case 'i':
-                printf("option: i, %s\n", optarg);
+                //printf("option: i, %s\n", optarg);
                 strncpy(sourceCodeName, optarg, strlen(optarg));
-                printf("fileName: %s\n", sourceCodeName);
+                //printf("fileName: %s\n", sourceCodeName);
                 break;
                 
             case 'o':
-                printf("option: o, %s\n", optarg);
+                //printf("option: o, %s\n", optarg);
                 strncpy(outFileName, optarg, strlen(optarg));
-                printf("fileName: %s\n", outFileName);
+                //printf("fileName: %s\n", outFileName);
                 break;
             case 'h':
                 printHelp();
                 return 0;
             case '?':
-                printf( "option: ?, %s\n", optarg );
+                printf("invalid option >:[\n");
+                printf("use '--help for more options'");
                 break;
             default:
-                printf( "option: unknown\n" );
+                printf("invalid option >:[\n");
+                printf("use '--help for more options'");
                 break;
         }
     }
-#endif
-    
-#ifndef terminal
-    strncpy(sourceCodeName, "/Users/michaelleong/michaelleong/NTNU/programming_2/hw0402/hw0402/test.c", strlen("/Users/michaelleong/michaelleong/NTNU/programming_2/hw0402/hw0402/test.c"));
-    strncpy(outFileName, "/Users/michaelleong/michaelleong/NTNU/programming_2/hw0402/hw0402/outtest.c", strlen("/Users/michaelleong/michaelleong/NTNU/programming_2/hw0402/hw0402/outtest.c"));
-#endif
     
     if(option > 4 || option < 1) {
         printf("invalid option >:[\n");
@@ -201,7 +196,7 @@ int main(int argc, char *argv[]) {
     }
     //main function name cannot be changed
     updateFuncList(funcNameList, sizeof(funcNameList)/sizeof(funcNameList[0]));
-    
+    /*
     printf("variables:\n");
     for(size_t i = 0; i < varNameIndex; i++) {
         printf("%s : %s\n", varNameList[i].oriVarName, varNameList[i].newVarName);
@@ -210,7 +205,7 @@ int main(int argc, char *argv[]) {
     printf("\nfunctions:\n");
     for(size_t i = 0; i < funcNameIndex; i++) {
         printf("%s : %s\n", funcNameList[i].oriFuncName, funcNameList[i].newFuncName);
-    }
+    }*/
     
     //open output file
     FILE *outFile = NULL;
