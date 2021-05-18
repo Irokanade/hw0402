@@ -289,19 +289,28 @@ int main(int argc, char *argv[]) {
                 i++;
                 decPlace++;
             }
+            char tempChar = *i;
             *i = 0;
             intTemp = strtol(i-decPlace, &pEnd, 10);
             if(pEnd == NULL) {
                 printf("Conversion unsuccessful\n");
                 return 1;
             }
-            printf("numbers: %lld : ", intTemp);
+            *i = tempChar;
+            
+            //fwrite(lastFound, i-lastFound-decPlace, 1, stdout);
+            fwrite(lastFound, i-lastFound-decPlace, 1, outFile);
+            lastFound = i;
+            //printf("numbers: %lld : ", intTemp);
             if(intTemp > 1) {
                 long long int subtractor = (rand()%(intTemp-1))+1;
                 long long int multiplier = (rand()%(intTemp-subtractor))+(intTemp-subtractor);
-                printf("(%lld + (%lld/%lld))", subtractor, (intTemp-subtractor)*multiplier, multiplier);
+                //printf("(%lld + (%lld/%lld))", subtractor, (intTemp-subtractor)*multiplier, multiplier);
+                fprintf(outFile, "(%lld + (%lld/%lld))", subtractor, (intTemp-subtractor)*multiplier, multiplier);
+            } else {
+                fprintf(outFile, "%lld", intTemp);
             }
-            printf("\n");
+            //printf("\n");
         }
         
     }
@@ -464,6 +473,7 @@ int getIntLen(int num) {
 }
 
 void addRandSpaceNL(FILE *writeFile) {
+    
     int spaceRep = (rand()%20)+10;
     int nlRep = (rand()%5)+10;
     
