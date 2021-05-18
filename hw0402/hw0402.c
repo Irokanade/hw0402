@@ -39,6 +39,8 @@ size_t checkRandomNamechar(char *name, varName *varNameList, size_t varNameListL
 size_t checkList(char *name, varName *varNameList, size_t varNameListLen, funcName *funcNameList, size_t funcNameListLen);
 void remove_spaces(char* s);
 int isLetter(char letter);
+int isAscDigit(char digit);
+int getIntLen(int num);
 void addRandSpaceNL(FILE *writeFile);
 void initVarList(varName *varNameList, size_t varNameListLen);
 void initFuncList(funcName *funcNameList, size_t FuncNameListLen);
@@ -120,6 +122,13 @@ int main(int argc, char *argv[]) {
     sourceCodePointer = mmap( 0, sourcefileSize, PROT_READ | PROT_WRITE, MAP_SHARED, sourceCodeFD, 0 );
     
     for(char *i = sourceCodePointer; *i != 0; i++) {
+        //ignore macro
+        if(*i == '#') {
+            while(*i != '\n') {
+                i++;
+            }
+        }
+        
         //ignore comments
         if(*i == '/' && *(i+1) == '/') {
             while(*i != '\n') {
@@ -203,6 +212,13 @@ int main(int argc, char *argv[]) {
     
     char *lastFound = sourceCodePointer;
     for(char *i = sourceCodePointer; *i != 0; i++) {
+        //ignore macro
+        if(*i == '#') {
+            while(*i != '\n') {
+                i++;
+            }
+        }
+        
         //ignore comments
         if(*i == '/' && *(i+1) == '/') {
             while(*i != '\n') {
@@ -222,6 +238,19 @@ int main(int argc, char *argv[]) {
             do {
                 i++;
             } while(*i != '"');
+        }
+        
+        //search for types
+        if((strncmp(i, "int", strlen("int")) == 0) && (!isLetter(*(i+strlen("int"))))) {
+            addRandSpaceNL(outFile);
+            i += strlen("int");
+            addRandSpaceNL(outFile);
+        }
+        
+        if((strncmp(i, "char", strlen("char")) == 0) && (!isLetter(*(i+strlen("char"))))) {
+            addRandSpaceNL(outFile);
+            i += strlen("char");
+            addRandSpaceNL(outFile);
         }
         
         //replace variables
@@ -251,6 +280,30 @@ int main(int argc, char *argv[]) {
                 break;
             }
         }
+        
+        //replace numbers
+        if(isAscDigit(*i)) {
+            long long int intTemp = 0;
+            int decPlace = 0;
+            while(isAscDigit(*i)) {
+                i++;
+                decPlace++;
+            }
+            *i = 0;
+            intTemp = strtol(i-decPlace, &pEnd, 10);
+            if(pEnd == NULL) {
+                printf("Conversion unsuccessful\n");
+                return 1;
+            }
+            printf("numbers: %lld : ", intTemp);
+            if(intTemp > 1) {
+                long long int subtractor = (rand()%(intTemp-1))+1;
+                long long int multiplier = (rand()%(intTemp-subtractor))+(intTemp-subtractor);
+                printf("(%lld + (%lld/%lld))", subtractor, (intTemp-subtractor)*multiplier, multiplier);
+            }
+            printf("\n");
+        }
+        
     }
     
     //write the rest
@@ -359,7 +412,7 @@ size_t checkList(char *name, varName *varNameList, size_t varNameListLen, funcNa
     //else return -1
     if(varNameList != NULL) {
         for(size_t i = 0; i < varNameListLen; i++) {
-            if(strncmp(name, (varNameList+i)->oriVarName, strlen(name)) == 0) {
+            if(strncmp(name, (varNameList+i)->oriVarName, strlen(name)) == 0 && (!isLetter(*((varNameList+i)->oriVarName+strlen(name))))) {
                 return i;
             }
         }
@@ -367,7 +420,7 @@ size_t checkList(char *name, varName *varNameList, size_t varNameListLen, funcNa
     
     if(funcNameList != NULL) {
         for(size_t i = 0; i < funcNameListLen; i++) {
-            if(strncmp(name, (funcNameList+i)->oriFuncName, strlen(name)) == 0) {
+            if(strncmp(name, (funcNameList+i)->oriFuncName, strlen(name)) == 0 && (!isLetter(*((funcNameList+i)->oriFuncName+strlen(name))))) {
                 return i;
             }
         }
@@ -395,9 +448,24 @@ int isLetter(char letter) {
     return 0;
 }
 
+int isAscDigit(char digit) {
+    return (digit >= '0' && digit <= '9');
+}
+
+int getIntLen(int num) {
+    int count = 0;
+    
+    while(num > 0) {
+        num /= 10;
+        count++;
+    }
+    
+    return count;
+}
+
 void addRandSpaceNL(FILE *writeFile) {
-    int spaceRep = (rand()%10)+1;
-    int nlRep = (rand()%5)+1;
+    int spaceRep = (rand()%20)+10;
+    int nlRep = (rand()%5)+10;
     
     for(size_t i = 0; i < nlRep; i++) {
         fputc('\n', writeFile);
