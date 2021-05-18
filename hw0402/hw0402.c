@@ -100,6 +100,7 @@ int main(int argc, char *argv[]) {
     size_t varNameIndex = 0;
     size_t funcNameIndex = 0;
     
+    srand((unsigned int)time(NULL));
     initVarList(varNameList, sizeof(varNameList)/sizeof(varNameList[0]));
     initFuncList(funcNameList, sizeof(funcNameList)/sizeof(funcNameList[0]));
     
@@ -178,7 +179,7 @@ int main(int argc, char *argv[]) {
             }
         }
     }
-    
+    //main function name cannot be changed
     updateFuncList(funcNameList, sizeof(funcNameList)/sizeof(funcNameList[0]));
     
     printf("variables:\n");
@@ -199,7 +200,6 @@ int main(int argc, char *argv[]) {
         return 1;
     }
     
-    //replace all varibles
     char *lastFound = sourceCodePointer;
     for(char *i = sourceCodePointer; *i != 0; i++) {
         //ignore comments
@@ -223,12 +223,25 @@ int main(int argc, char *argv[]) {
             } while(*i != '"');
         }
         
+        //replace variables
         for(size_t j = 0; j < varNameIndex; j++) {
             if((strncmp(i, varNameList[j].oriVarName, strlen(varNameList[j].oriVarName)) == 0) && (!isLetter(*(i+strlen(varNameList[j].oriVarName))))) {
                 //printf("offset: %ld\n", i-lastFound);
                 fwrite(lastFound, i-lastFound, 1, outFile);
                 fwrite(varNameList[j].newVarName, strlen(varNameList[j].newVarName), 1, outFile);
                 i += strlen(varNameList[j].oriVarName);
+                lastFound = i;
+                break;
+            }
+        }
+        
+        //replace functions
+        for(size_t j = 0; j < funcNameIndex; j++) {
+            if((strncmp(i, funcNameList[j].oriFuncName, strlen(funcNameList[j].oriFuncName)) == 0) && (!isLetter(*(i+strlen(funcNameList[j].oriFuncName))))) {
+                //printf("offset: %ld\n", i-lastFound);
+                fwrite(lastFound, i-lastFound, 1, outFile);
+                fwrite(funcNameList[j].newFuncName, strlen(funcNameList[j].newFuncName), 1, outFile);
+                i += strlen(funcNameList[j].oriFuncName);
                 lastFound = i;
                 break;
             }
@@ -242,10 +255,6 @@ int main(int argc, char *argv[]) {
     
     fclose(outFile);
     
-    //replace the functions
-    FILE *outFuncFile = NULL;
-    
-    
     
     munmap(sourceCodePointer, sourcefileSize);
     close(sourceCodeFD);
@@ -253,7 +262,6 @@ int main(int argc, char *argv[]) {
 }
 
 void initVarList(varName *varNameList, size_t varNameListLen) {
-    srand((unsigned int)time(NULL));
     int randomStrLen = rand() % 100 + 5;
     
     for(size_t i = 0; i < varNameListLen; i++) {
@@ -282,7 +290,6 @@ void initVarList(varName *varNameList, size_t varNameListLen) {
 }
 
 void initFuncList(funcName *funcNameList, size_t funcNameListLen) {
-    srand((unsigned int)time(NULL));
     int randomStrLen = rand() % 100 + 5;
     
     for(size_t i = 0; i < funcNameListLen; i++) {
