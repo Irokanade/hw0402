@@ -39,6 +39,7 @@ size_t checkRandomNamechar(char *name, varName *varNameList, size_t varNameListL
 size_t checkList(char *name, varName *varNameList, size_t varNameListLen, funcName *funcNameList, size_t funcNameListLen);
 void remove_spaces(char* s);
 int isLetter(char letter);
+void addRandSpaceNL(FILE *writeFile);
 void initVarList(varName *varNameList, size_t varNameListLen);
 void initFuncList(funcName *funcNameList, size_t FuncNameListLen);
 void updateFuncList(funcName *funcNameList, size_t funcNameListLen);
@@ -227,10 +228,12 @@ int main(int argc, char *argv[]) {
         for(size_t j = 0; j < varNameIndex; j++) {
             if((strncmp(i, varNameList[j].oriVarName, strlen(varNameList[j].oriVarName)) == 0) && (!isLetter(*(i+strlen(varNameList[j].oriVarName))))) {
                 //printf("offset: %ld\n", i-lastFound);
+                addRandSpaceNL(outFile);
                 fwrite(lastFound, i-lastFound, 1, outFile);
                 fwrite(varNameList[j].newVarName, strlen(varNameList[j].newVarName), 1, outFile);
                 i += strlen(varNameList[j].oriVarName);
                 lastFound = i;
+                addRandSpaceNL(outFile);
                 break;
             }
         }
@@ -239,10 +242,12 @@ int main(int argc, char *argv[]) {
         for(size_t j = 0; j < funcNameIndex; j++) {
             if((strncmp(i, funcNameList[j].oriFuncName, strlen(funcNameList[j].oriFuncName)) == 0) && (!isLetter(*(i+strlen(funcNameList[j].oriFuncName))))) {
                 //printf("offset: %ld\n", i-lastFound);
+                addRandSpaceNL(outFile);
                 fwrite(lastFound, i-lastFound, 1, outFile);
                 fwrite(funcNameList[j].newFuncName, strlen(funcNameList[j].newFuncName), 1, outFile);
                 i += strlen(funcNameList[j].oriFuncName);
                 lastFound = i;
+                addRandSpaceNL(outFile);
                 break;
             }
         }
@@ -388,6 +393,19 @@ int isLetter(char letter) {
     }
     
     return 0;
+}
+
+void addRandSpaceNL(FILE *writeFile) {
+    int spaceRep = (rand()%10)+1;
+    int nlRep = (rand()%5)+1;
+    
+    for(size_t i = 0; i < nlRep; i++) {
+        fputc('\n', writeFile);
+    }
+    
+    for(size_t i = 0; i < spaceRep; i++) {
+        fputc(' ', writeFile);
+    }
 }
 
 int varOrFunc(char *i, char *name, int offset) {
