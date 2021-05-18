@@ -20,6 +20,7 @@ struct option long_options[] = {
     {"level", 1, NULL, 'l'},
     {"input", 1, NULL, 'i'},
     {"output", 1, NULL, 'o'},
+    {"help", 0, NULL, 'h'},
     { 0, 0, 0, 0},
 };
 
@@ -45,6 +46,7 @@ void addRandSpaceNL(FILE *writeFile);
 void initVarList(varName *varNameList, size_t varNameListLen);
 void initFuncList(funcName *funcNameList, size_t FuncNameListLen);
 void updateFuncList(funcName *funcNameList, size_t funcNameListLen);
+void printHelp(void);
 
 int main(int argc, char *argv[]) {
     int sourceCodeFD = 0; //source code file descriptor
@@ -56,7 +58,7 @@ int main(int argc, char *argv[]) {
     char *pEnd = NULL;
     
 #ifdef terminal
-    while ( ( c = getopt_long( argc, argv, "l:i:o:", long_options, &index ) ) != -1 )
+    while ( ( c = getopt_long( argc, argv, "l:i:o:h", long_options, &index ) ) != -1 )
     {
         //printf( "index: %d\n", index );
         switch( c )
@@ -82,7 +84,9 @@ int main(int argc, char *argv[]) {
                 strncpy(outFileName, optarg, strlen(optarg));
                 printf("fileName: %s\n", outFileName);
                 break;
-                
+            case 'h':
+                printHelp();
+                return 0;
             case '?':
                 printf( "option: ?, %s\n", optarg );
                 break;
@@ -565,4 +569,15 @@ uint64_t util_getFdSize( int fd )
     }
     
     return statbuf.st_size;
+}
+
+void printHelp() {
+    printf("____usage____\n");
+    printf("use './hw0402 -l <1-4> -i test.c -o test_output.c'\n");
+    printf("-l is level\n");
+    printf("level 1: add random spaces and new lines\n");
+    printf("level 2: replace variable names with random string\n");
+    printf("level 3: replace declared function names with random string\n");
+    printf("*note ANSI-C function and main functions will not be replaced\n");
+    printf("level 4: integers will be replace with a random formula that returns the same value\n");
 }
